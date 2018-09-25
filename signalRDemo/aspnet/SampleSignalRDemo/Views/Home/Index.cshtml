@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Chat</h1>
+    <ul id="messages">
+    </ul>
+    <input id="inputMessage" />
+    <a href="javascript:void(0)" id="send">发送</a>
+</div>
+@section scripts{
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src="~/signalr/hubs"></script> @*运行时生成的自动代理*@
+    <script>
+        $(function() {
+            var chat = $.connection.ChatHub; //代理服务ChatHub
+            chat.client.LoadMessage = function(message) { //客户端函数
+                var li = '<li>' + message + '</li>';
+                $("#messages").append(li);
+            }
+
+            $.connection.hub.start().done(function() { //链接成功后回调函数
+                $("#send").click(function() { //发送消息
+                    if ($("#inputMessage").val() !== "") {
+                        chat.server.SendMessage($("#inputMessage").val()).done(function() {//发送后回调函数
+                            $("#inputMessage").val("");
+                            $("#inputMessage").focus();//鼠标焦点
+                        });
+                    }
+                });
+            });
+        })
+    </script>
+}
